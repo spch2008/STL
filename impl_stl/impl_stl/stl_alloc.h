@@ -12,14 +12,14 @@ public:
 	static void *allocate(size_t size);
 	static void *reallocate(void *p, size_t old_size, size_t new_size);
 	static void  deallocate(void *p, size_t size);
-	static void  set_malloc_handler( void (*malloc_handler)() );
+	static void *set_malloc_handler( void (*malloc_handler)() );  //必须返回之前的handler
 
 private:
 	static void *oom_alloc(size_t size);
 	static void *oom_realloc(void *p, size_t old_size, size_t new_size);
 	
 private:
-	static void (*malloc_oom_handler)();
+	static void (*malloc_oom_handler)(); //不是用来获取内存，而是释放一些
 
 };
 
@@ -29,9 +29,12 @@ void (*_malloc_alloc_template<inst>::malloc_oom_handler)() = 0;
 
 
 template <class inst>
-void _malloc_alloc_template<inst>::set_malloc_handler( void (*malloc_handler)() )
+void *_malloc_alloc_template<inst>::set_malloc_handler( void (*malloc_handler)() )
 {
+	void (*my_handler)() = malloc_oom_handler;
 	malloc_oom_handler = malloc_handler;
+
+	return my_handler;
 }
 
 template <class inst>
