@@ -130,8 +130,8 @@ private:
 	static size_t heap_size;
 
 private:
-	size_t ROUND_UP(size_t size)  { return (size + ALIGN - 1) & (ALIGN - 1);}
-	int    LIST_INDEX(size_t size){ return (size + ALIGN - 1 ) / ALIGN - 1; }      // attension  8 belongs to the first block
+	static size_t ROUND_UP(size_t size)  { return (size + ALIGN - 1) & (ALIGN - 1);}
+	static int    LIST_INDEX(size_t size){ return (size + ALIGN - 1 ) / ALIGN - 1; }      // attension  8 belongs to the first block
 
 	static void *refill(size_t size);
 	static char *chunk(size_t size, int &nodes);
@@ -144,7 +144,7 @@ template <bool threads, int inst>
 char *_default_alloc_template<threads, inst>::free_end = 0;
 
 template <bool threads, int inst>
-char *_default_alloc_template<threads, inst>::heap_size = 0;
+size_t _default_alloc_template<threads, inst>::heap_size = 0;
 
 template <bool threads, int inst>
 typename _default_alloc_template<threads, inst>::node*
@@ -157,7 +157,7 @@ void *_default_alloc_template<threads, inst>::allocate(size_t size)
 	if(size > MAX_BYTES)
 		return malloc_alloc::allocate(size);
 
-	node *my_free_list = free_list + LIST_INDEX(size);
+	node **my_free_list = free_list + LIST_INDEX(size);
 	void *result = *my_free_list;
 	if(result == 0)
 	{
@@ -165,7 +165,7 @@ void *_default_alloc_template<threads, inst>::allocate(size_t size)
 		return result;
 	}
 
-	*my_free_list = (node*)result -> next;
+	*my_free_list = ((node*)result) -> next;   //import
 	return result;
 }
 
@@ -173,7 +173,16 @@ void *_default_alloc_template<threads, inst>::allocate(size_t size)
 template <bool threads, int inst>
 void *_default_alloc_template<threads, inst>::reallocate(void *p, size_t old_size, size_t new_size)
 {
-	return 0;
+	if( old_size > MAX_BYTES && new_size > MAX_BYTES)
+		return malloc_alloc::reallocate(p, old_size, new_size);
+
+	if( ROUND_UP(old_size) == ROUND_UP(new_size) ) return p;
+
+	void *result = allocate(new_size);
+	size_t copy_size = new_size > old_size ? old_size : new_size;  //find the less one
+	memcpy(result, p, copy_size);
+	deallocate(p, old_size);
+	return result;
 }
 
 
@@ -182,10 +191,12 @@ void _default_alloc_template<threads, inst>::deallocate(void *p, size_t size)
 {
 	if(size > MAX_BYTES)
 		malloc_alloc::deallocate(p, size);
-
-	node *my_free_list    = free_list + LIST_INDEX(size);
-	(node*)p->next        = (*my_free_list);
-	*my_free_list         = p;
+	else
+	{
+		node **my_free_list    = free_list + LIST_INDEX(size);
+		((node*)p)->next       = (*my_free_list);  //important
+		*my_free_list          = (node*)p;
+	}
 }
 
 template <bool threads, int inst>
@@ -198,7 +209,7 @@ void *_default_alloc_template<threads, inst>::refill(size_t size)
 		return result;
 
 	
-	node *my_free_list = free_list + LIST_INDEX(size);
+	node **my_free_list = free_list + LIST_INDEX(size);
 	node *free_node    = *my_free_list;
 	node *curr         = (node*)(result + size);
 	for(int i = 0; i < nodes-1; i++)
@@ -220,14 +231,14 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 
 	if( bytes_left > bytes_total)
 	{
-		void *result = start;
+		char *result = free_start;
 		free_start += bytes_total;
 		return result;
 	}
 	else if(bytes_left >= size)
 	{
 		nodes = bytes_left / size;
-		void *result = free_start;
+		char *result = free_start;
 		free_start += size * nodes;
 		return result;
 	}
@@ -235,8 +246,8 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 	{
 		if(bytes_left > 0)
 		{
-			node *my_free_list = free_list + FREE_INDEX(bytes_left);
-			node *curr         = (node*)start;
+			node **my_free_list = free_list + LIST_INDEX(bytes_left);
+			node *curr         = (node*)free_start;
 			curr->next         = *my_free_list;
 			*my_free_list      = curr;
 		}
@@ -248,7 +259,7 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 		{
 			for(size_t i = size; i <= MAX_BYTES; i += ALIGN)
 			{
-				void *my_free_list = free_list + FREE_INDEX(i);
+				node **my_free_list = free_list + LIST_INDEX(i);
 				if(*my_free_list != 0)
 				{
 					node *curr = *my_free_list;
@@ -258,10 +269,12 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 					return chunk(size, nodes);
 				}
 			}
-			free_start = malloc_alloc::allocate(bytes_to_get);
+			free_start = (char*)malloc_alloc::allocate(bytes_to_get);
 		}
 		heap_size += bytes_to_get;
-		end_free = start_free + bytes_to_get;
+		free_end = free_start + bytes_to_get;
 		return chunk(size, nodes);
 	}
 }
+
+typedef _default_alloc_template<false, 0> alloc;
