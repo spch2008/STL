@@ -99,7 +99,7 @@ void *_malloc_alloc_template<inst>::oom_realloc(void *p, size_t old_size, size_t
 }
 
 
-//typedef _malloc_alloc_template<0> malloc_alloc;
+typedef _malloc_alloc_template<0> malloc_alloc;
 
 
 
@@ -131,7 +131,7 @@ private:
 
 private:
 	size_t ROUND_UP(size_t size)  { return (size + ALIGN - 1) & (ALIGN - 1);}
-	int    LIST_INDEX(size_t size){ return size / ALIGN;}            // what type?
+	int    LIST_INDEX(size_t size){ return (size + ALIGN - 1 ) / ALIGN - 1; }      // attension  8 belongs to the first block
 
 	static void *refill(size_t size);
 	static char *chunk(size_t size, int &nodes);
@@ -185,7 +185,7 @@ void _default_alloc_template<threads, inst>::deallocate(void *p, size_t size)
 
 	node *my_free_list    = free_list + LIST_INDEX(size);
 	(node*)p->next        = (*my_free_list);
-	*my_free_list          = p;
+	*my_free_list         = p;
 }
 
 template <bool threads, int inst>
@@ -216,7 +216,7 @@ template <bool threads, int inst>
 char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 {
 	size_t bytes_total = size * nodes;
-	size_t bytes_left   = free_end - free_start;   // right ?    + 1
+	size_t bytes_left   = free_end - free_start;   // [free, end) so end - free = size, not size - 1
 
 	if( bytes_left > bytes_total)
 	{
@@ -243,25 +243,25 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 
 
 		size_t bytes_to_get = 2 * bytes_total + ROUND_UP(heap_size >> 4);
-		void *result = malloc(bytes_to_get);
-		if(result != 0)
+		free_start = (char*)malloc(bytes_to_get);
+		if(free_start == 0)
 		{
-			free_start = (char*)result + bytes_total;
-			end_free   = free_start + bytes_to_get - bytes_total;
-			return result;
-		}
-
-		for(size_t i = size; i <= MAX_BYTES; i += ALIGN)
-		{
-			void *my_free_list = free_list + FREE_INDEX(i);
-			if(*my_free_list != 0)
+			for(size_t i = size; i <= MAX_BYTES; i += ALIGN)
 			{
-				node *result = *my_free_list;
-				*my_free_list= result->next;
-				free_start = (char*)result + size;
-				free_end   = free_start + i - size;
-				return result;
+				void *my_free_list = free_list + FREE_INDEX(i);
+				if(*my_free_list != 0)
+				{
+					node *curr = *my_free_list;
+					*my_free_list= curr->next;
+					free_start = (char*)curr;
+					free_end   = free_start + i;
+					return chunk(size, nodes);
+				}
 			}
+			free_start = malloc_alloc::allocate(bytes_to_get);
 		}
+		heap_size += bytes_to_get;
+		end_free = start_free + bytes_to_get;
+		return chunk(size, nodes);
 	}
 }
