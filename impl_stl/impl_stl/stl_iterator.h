@@ -1,5 +1,3 @@
-#ifndef _STL_ITERATOR_
-#define _STL_ITERATOR_
 
 struct input_iterator_tag  {};   //readonly
 struct output_iterator_tag {};   //writeonly
@@ -128,5 +126,3 @@ inline void _advance(RandomIterator &iter, Distance n, random_access_iterator_ta
 {
 	iter += n;
 }
-
-#endif
