@@ -32,5 +32,11 @@
     <ClInclude Include="type_traits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_uninitialized.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stl_construct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
