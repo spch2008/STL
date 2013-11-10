@@ -1,10 +1,11 @@
 
 #include <new.h>
-
+#include "stl_iterator.h"
+#include "type_traits.h"
 template <class T1, class T2>
 inline void contruct(T1 *p, const T2 &value)
 {
-	new (p) T1(value);
+	new (p) T1(value);   // ? if value is a class type
 }
 
 template <class T>
@@ -38,3 +39,10 @@ template <class ForwardIterator>
 inline void _destroy_aux(ForwardIterator first, ForwardIterator last, false_type)
 {
 }
+
+/*
+ 流程:
+ 1. 根据迭代器提取元素类型
+ 2. 由元素类型提取元素type
+ 3. 根据元素type分别进行处理
+*/

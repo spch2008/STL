@@ -38,5 +38,8 @@
     <ClInclude Include="stl_construct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

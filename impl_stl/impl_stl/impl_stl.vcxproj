@@ -80,6 +80,7 @@
     <ClCompile Include="impl_stl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="memory.h" />
     <ClInclude Include="stl_alloc.h" />
     <ClInclude Include="stl_construct.h" />
     <ClInclude Include="stl_iterator.h" />

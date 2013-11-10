@@ -1,7 +1,3 @@
-#ifndef _STL_ALLOC_H
-#define _STL_ALLOC_H
-
-
 #include <cstddef>
 #include <iostream>
 
@@ -281,5 +277,3 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 }
 
 typedef _default_alloc_template<false, 0> alloc;
-
-#endif

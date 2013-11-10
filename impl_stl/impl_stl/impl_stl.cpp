@@ -1,12 +1,11 @@
 // impl_stl.cpp : Defines the entry point for the console application.
 //
 
-#include "stl_alloc.h"
-#include "stl_iterator.h"
-#include "type_traits.h"
-#include "stl_uninitialized.h"
+#include "memory.h"
+
 int main(int argc, char* argv[])
 {
+	system("pause");
 	return 0;
 }
 
