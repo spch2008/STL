@@ -143,3 +143,8 @@ struct type_traits<T*>
 	typedef true_type has_trival_destructor;
 	typedef true_type is_POD_type;
 };
+
+/*
+  注意：
+  上述偏特化对指针不进行特殊处理，谨记。
+*/
