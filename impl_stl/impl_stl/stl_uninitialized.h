@@ -22,7 +22,7 @@ inline ForwardIterator _uninitialized_fill_n(ForwardIterator first,
 }
 
 template <class ForwardIterator, class Size, class T>
-inline ForwardIterator _uninitialized_fill_n(ForwardIterator first,
+inline ForwardIterator _uninitialized_fill_n_aux(ForwardIterator first,
 	                                         Size size, const T& x, true_type)
 {
 	return fill_n(first, n, x);
@@ -30,7 +30,7 @@ inline ForwardIterator _uninitialized_fill_n(ForwardIterator first,
 
 /*取出first所指对象，*first, 然后取地址，得到内存地址，将新对象构建在此*/
 template <class ForwardIterator, class Size, class T>
-inline ForwardIterator _uninitialized_fill_n(ForwardIterator first,
+inline ForwardIterator _uninitialized_fill_n_aux(ForwardIterator first,
 	                                         Size size, const T& x, false_type)
 {
 	ForwardIterator curr = first;
