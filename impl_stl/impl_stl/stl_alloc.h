@@ -277,3 +277,18 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 }
 
 typedef _default_alloc_template<false, 0> alloc;
+
+
+template <class T, class Alloc>
+class simple_alloc
+{
+public:
+	static void T* allocate(size_t n)
+	{ return n == 0 ? 0 : Alloc::allocate(sizeof(T) * n); }
+	static void T* allocate()
+	{ return Alloc::allocate(sizeof(T)); }
+	static void deallocate(T *p, size_t n)
+	{ Alloc::deallocate(p, sizeof(T) * n); }
+	static void deallocate(T *p)
+	{ Alloc::deallocate(p, sizeof(T)); }
+};
