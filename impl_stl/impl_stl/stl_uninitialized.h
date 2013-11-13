@@ -64,7 +64,7 @@ template <class InputIterator, class ForwardIterator>
 inline ForwardIterator _uninitialized_copy_aux(InputIterator first, InputIterator last,
 	                                           ForwardIterator result, true_type)
 {
-	return copy(first, last, result);
+	return std::copy(first, last, result);
 }
 
 template <class InputIterator, class ForwardIterator>

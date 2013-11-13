@@ -285,7 +285,7 @@ class simple_alloc
 {
 public:
 	static T* allocate(size_t n)
-	{ return n == 0 ? 0 : Alloc::allocate(sizeof(T) * n); }
+	{ return n == 0 ? 0 :(T*) Alloc::allocate(sizeof(T) * n); }
 	static T* allocate()
 	{ return Alloc::allocate(sizeof(T)); }
 	static void deallocate(T *p, size_t n)

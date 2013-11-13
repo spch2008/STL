@@ -24,7 +24,7 @@ public:
 	vector(const vector& x);
 	vector& operator=(const vector& x);
 
-	~vector(){destroy(start, finish); deallocate();}
+	~vector(){ destroy(start, finish); deallocate(); }
 
 	//Iterators:
 	iterator begin() { return start;}
@@ -173,7 +173,59 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(iterator position, 
 template <class T, class Alloc>
 void vector<T, Alloc>::insert(iterator position, size_type n, const value_type& val)
 {
-	return 0;
+	if( n != 0)
+	{
+		value_type x_copy = val;
+
+		if( n < end_of_storage - finish)
+		{
+			size_type elem_after = finish - position;
+			iterator old_finish = finish;
+			if(elem_after <= n)  //全部移动到初始化区域, p127分析
+			{
+				uninitialized_fill_n(finish, n - elem_after, x_copy);
+				finish += n - elem_after;
+				uninitialized_copy(position, old_finish, finish);
+				fill(position, old_finish, x_copy);
+			}
+			else  //部分移动到未初始化区域
+			{
+				uninitialized_copy(finish-n, finish, finish);
+				finish += n;
+				copy_backward(position, old_finish - n, old_finish);
+				fill(position, old_finish, x_copy);
+			}
+		}
+		else
+		{
+			const size_type old_size = size();
+			const size_type new_size = old_size + max(old_size, n);
+
+			iterator new_start  = data_allocator::allocate(new_size);
+			iterator new_finish = new_start;
+
+			try
+			{
+				new_finish = uninitialized_copy(start, position, new_start);
+				uninitialized_fill_n(new_finish, n, x_copy);
+				new_finish += n;
+				new_finish  = uninitialized_copy(position, finish, new_finish);
+			}
+			catch(...)
+			{
+				destroy(new_start, new_finish);
+				data_allocator::deallocate(new_start, new_size);
+				throw;
+			}
+
+			destroy(start, finish);
+			deallocate();
+
+			start  = new_start;
+			finish = new_finish;
+			end_of_storage = start + new_size;
+		}
+	}
 }
 
 
@@ -201,7 +253,7 @@ void vector<T, Alloc>::insert_aux(iterator position, const T& val)
 	{
 		construct( finish, *(finish - 1) );
 		++finish;
-		copy_backward(position, finish - 2, finish - 1);
+		std::copy_backward(position, finish - 2, finish - 1);
 		
 		//construct val
 		T val_copy = val;   //拷贝一份，因为传的引用，元对象可能会被处理
@@ -225,7 +277,7 @@ void vector<T, Alloc>::insert_aux(iterator position, const T& val)
 		catch(...)
 		{
 			destroy(new_start, new_finish);
-			data_allocator::deallocate(new_start, new_finish);
+			data_allocator::deallocate(new_start, new_size);
 			throw;
 		}
 

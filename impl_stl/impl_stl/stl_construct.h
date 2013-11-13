@@ -3,7 +3,7 @@
 #include "stl_iterator.h"
 #include "type_traits.h"
 template <class T1, class T2>
-inline void contruct(T1 *p, const T2 &value)
+inline void construct(T1 *p, const T2 &value)
 {
 	new (p) T1(value);   // ? if value is a class type
 }
@@ -38,6 +38,7 @@ inline void _destroy_aux(ForwardIterator first, ForwardIterator last, true_type)
 template <class ForwardIterator>
 inline void _destroy_aux(ForwardIterator first, ForwardIterator last, false_type)
 {
+	//do nothing
 }
 
 /*
