@@ -59,7 +59,7 @@ void *_malloc_alloc_template<inst>::reallocate(void *p, size_t old_size, size_t 
 template <int inst>
 void _malloc_alloc_template<inst>::deallocate(void *p, size_t size)
 {
-	free(p);
+	free(p);  //采用malloc分配的，不需要size，因为malloc算法内部记录大小
 }
 
 template <int inst>
@@ -279,13 +279,14 @@ char *_default_alloc_template<threads, inst>::chunk(size_t size, int &nodes)
 typedef _default_alloc_template<false, 0> alloc;
 
 
+//针对类型进行空间分配
 template <class T, class Alloc>
 class simple_alloc
 {
 public:
-	static void T* allocate(size_t n)
+	static T* allocate(size_t n)
 	{ return n == 0 ? 0 : Alloc::allocate(sizeof(T) * n); }
-	static void T* allocate()
+	static T* allocate()
 	{ return Alloc::allocate(sizeof(T)); }
 	static void deallocate(T *p, size_t n)
 	{ Alloc::deallocate(p, sizeof(T) * n); }
