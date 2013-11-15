@@ -8,6 +8,7 @@
 
 int main(int argc, char* argv[])
 {
+	
 	list<int> vec;
 	vec.push_back(10);
 	vec.push_back(2);
@@ -23,12 +24,15 @@ int main(int argc, char* argv[])
 
 
 	vec.sort();
-/*	
+	
+   	
 
 	for(iter = vec.begin(); iter != vec.end(); iter++)
 		std::cout << *iter << " ";
 	std::cout << std::endl;
-*/
+   
+
+
 	system("pause");
 	return 0;
 }

@@ -311,10 +311,9 @@ void list<T, Alloc>::merge(list<T, Alloc> &that)
 		}
 		else
 			++first1;
-
-		if(first2 != last2)
-			transfer(last1, first1, last2);
 	}
+	if(first2 != last2)
+			transfer(last1, first2, last2);
 }
 
 template <class T, class Alloc>
