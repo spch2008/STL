@@ -1,3 +1,5 @@
+#ifndef _STL_ITERATOR_H
+#define _STL_ITERATOR_H
 
 struct input_iterator_tag  {};   //readonly
 struct output_iterator_tag {};   //writeonly
@@ -77,7 +79,7 @@ inline typename iterator_traits<InputIterator>::difference_type
 	_distance(InputIterator first, InputIterator last, input_iterator_tag)
 {
 	iterator_traits<InputIterator>::difference_type n = 0;
-	while( first < last)
+	while( first != last)
 	{
 		++n;
 		++first;
@@ -126,3 +128,6 @@ inline void _advance(RandomIterator &iter, Distance n, random_access_iterator_ta
 {
 	iter += n;
 }
+
+
+#endif

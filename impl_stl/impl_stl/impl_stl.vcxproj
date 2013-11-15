@@ -80,10 +80,12 @@
     <ClCompile Include="impl_stl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="list.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="stl_alloc.h" />
     <ClInclude Include="stl_construct.h" />
     <ClInclude Include="stl_iterator.h" />
+    <ClInclude Include="stl_list.h" />
     <ClInclude Include="stl_uninitialized.h" />
     <ClInclude Include="stl_vector.h" />
     <ClInclude Include="type_traits.h" />

@@ -47,5 +47,11 @@
     <ClInclude Include="vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
