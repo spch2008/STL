@@ -268,7 +268,7 @@ void list<T, Alloc>::transfer(iterator position, iterator first, iterator last)
 {
 	if( position == last)
 		return;
-/*
+
 	link_type(position.node->prev)->next = first.node;
 	link_type(first.node->prev)->next    = last.node;
 	link_type(last.node->prev)->next     = position.node;
@@ -277,16 +277,7 @@ void list<T, Alloc>::transfer(iterator position, iterator first, iterator last)
 	position.node->prev = last.node->prev;
 	last.node->prev     = first.node->prev;
 	first.node->prev    = tmp;
-	*/
-
-	(*(link_type((*last.node).prev))).next = position.node;
-      (*(link_type((*first.node).prev))).next = last.node;
-      (*(link_type((*position.node).prev))).next = first.node;  
-      link_type tmp = link_type((*position.node).prev);
-      (*position.node).prev = (*last.node).prev;
-      (*last.node).prev = (*first.node).prev; 
-      (*first.node).prev = tmp;
-
+	
 
 	//1. 先让前一个节点指向position，last，first，以防破坏pre指针
 	//2. 记录的tmp肯定要最后处理
