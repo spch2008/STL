@@ -181,13 +181,14 @@ protected:
 	iterator start;
 	iterator finish;
 
-	map_pointer map;
+	map_pointer map;  //point to map
 	size_type   map_size;
 
 
 protected:
-	void initialize(size_type n, const value_type& value);
+	void fill_initialize(size_type num_elems, const value_type& value);
 	void create_map_and_nodes(size_type num_elems);
+	void destroy_map_and_nodes();
 
 	static size_t buffer_size()
 	{
@@ -203,18 +204,23 @@ protected:
 
 
 template <class T, class Alloc, size_t BufSize>
-void deque<T, Alloc, BufSize>::initialize(size_type n, const value_type &value)
+void deque<T, Alloc, BufSize>::fill_initialize(size_type num_elems, const value_type &value)
 {
-	return;
+	create_map_and_nodes(num_elems);
+
+	
+	for(map_pointer curr = start.node; curr < finish.node; ++curr)
+		uninitialized_fill(*curr, *curr + buffer_size(), value);
+	uninitialized_fill(finish.first, finish.cur, value);
 }
 
 template <class T, class Alloc, size_t BufSize>
 void deque<T, Alloc, BufSize>::create_map_and_nodes(size_type num_elems)
 {
-	size_type num_nodes = num_elems / buffer_size() + 1;  // num of map_nodes
+	size_type num_nodes = num_elems / buffer_size() + 1;  // num of user-wanted map_nodes
 
 	//build map
-	map_size = max( initial_map_size(), num_nodes + 2 );
+	map_size = max( initial_map_size(), num_nodes + 2 ); 
 	map      = map_allocator::allocate(map_size);
 
 	//set initial map pointer
@@ -242,4 +248,13 @@ void deque<T, Alloc, BufSize>::create_map_and_nodes(size_type num_elems)
 	finish.set_node(nfinish);
 	finish.cur = finish.first + num_elems % buffer_size();
 	
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::destroy_map_and_nodes()
+{
+	for(map_pointer curr = start.node; curr <= finish.node; ++curr)
+		deallocate_node(*curr);
+	map_allocator::deallocate(map, map_size);
 }
