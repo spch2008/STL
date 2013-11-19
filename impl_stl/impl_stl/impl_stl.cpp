@@ -6,6 +6,7 @@
 #include "list.h"
 #include <iostream>
 
+#include "stl_deque.h"
 int main(int argc, char* argv[])
 {
 	
