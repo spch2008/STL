@@ -199,6 +199,12 @@ protected:
 
 	pointer allocate_node() { return data_allocator::allocate( buffer_size() ); }
 	void    deallocate_node(pointer p) { data_allocator::deallocate(p, buffer_size()); }
+
+	void push_back_aux(const value_type& val);
+	void push_front_aux(const value_type& val);
+
+	void pop_back_aux();
+	void pop_front_aux();
 };
 
 
@@ -258,3 +264,120 @@ void deque<T, Alloc, BufSize>::destroy_map_and_nodes()
 		deallocate_node(*curr);
 	map_allocator::deallocate(map, map_size);
 }
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::push_back(const value_type &val)
+{
+	if( finish.cur != finish.last - 1)
+	{
+		construct(finish.cur, val);
+		++finish;
+	}
+	else
+		push_back_aux(val);
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::push_back_aux(const value_type &val)
+{
+	reserve_map_at_back();
+
+	*(finish.node + 1 ) = allocate_node();
+	try
+	{
+		construct(finish.cur, val);
+	}
+	catch(...)
+	{
+		deallocate_node(finish.node + 1);
+		throw;
+	}
+	
+	finish.set_node(finish.node + 1);
+	finish.cur = finish.first;
+
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::push_front(const value_type &val)
+{
+	if(start.cur != start.first)
+	{
+		--start;
+		construct(start.cur, val); 
+	}
+	else
+		push_front_aux(val);
+
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::push_front_aux(const value_type &val)
+{
+	reserve_map_at_front();
+
+	*(start.node - 1) = allocate_node();
+	start.set_node(start.node - 1);
+	start.cur = start.last - 1;
+
+	try
+	{
+		construct(start.cur, val);
+	}
+	catch(...)
+	{
+		start.set_node(start.node + 1);
+		start.cur = start.first;
+
+		deallocate_node(*(start.node-1));
+		throw;
+	}
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::pop_back()
+{
+	if(finish.cur != finish.first)
+	{
+		--finish;
+		destroy(finish.cur);
+	}
+	else
+		pop_back_aux();
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::pop_back_aux()
+{
+	deallocate_node(finish.first);
+
+	finish.set_node(finish.node - 1);
+	finish.cur = finish.last - 1;
+
+	destroy(finish.cur);
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::pop_front()
+{
+	if(start.cur != start.last - 1)
+	{
+		destroy(start.cur);
+		++start;
+	}
+	else
+		pop_front_aux();
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::pop_front_aux()
+{
+	destroy(start.cur);
+	deallocate_node(start.first);
+
+	start.set_node(start.node + 1);
+	start.cur = start.first;
+}
+
