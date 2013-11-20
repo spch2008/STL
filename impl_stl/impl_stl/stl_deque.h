@@ -428,7 +428,7 @@ void deque<T, Alloc, BufSize>::reserve_map(size_type nodes_to_add, bool add_at_f
 		size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
 		map_pointer new_map    = map_allocator::allocate(new_map_size);
 
-		new_start = new_map + ( new_map_size - old_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0));
+		new_start = new_map + ( new_map_size - new_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0));
 		
 		copy(start.node, finish.node + 1, new_start);
 		map_allocator::deallocate(map, map_size);
