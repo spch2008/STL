@@ -205,6 +205,10 @@ protected:
 
 	void pop_back_aux();
 	void pop_front_aux();
+
+	void reserve_map(size_type nodes_to_add, bool add_at_front);
+	void reserve_map_at_back(size_type nodes_to_add = 1);
+	void reserve_map_at_front(size_type nodes_to_add = 1);
 };
 
 
@@ -381,3 +385,58 @@ void deque<T, Alloc, BufSize>::pop_front_aux()
 	start.cur = start.first;
 }
 
+
+//疑问：如果默认参数声明与定义不同，何如？
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::reserve_map_at_back(size_type nodes_to_add)
+{
+	//used : finish.node - map + 1
+	//free ：map_size - (finish.node - map + 1)
+	//if free >= nodes_to_add  just return else handle   ==> if ( nodes_to_add > free) ==> do
+	//nodes_to_add can be think as （num of min-left）
+
+	if( nodes_to_add + 1 > map_size - (finish.node - map) )
+		reserve_map(nodes_to_add, false);
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::reserve_map_at_front(size_type nodes_to_add)
+{
+	if( nodes_to_add > start.node - 1)
+		reserve_map(nodes_to_add, true);
+}
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::reserve_map(size_type nodes_to_add, bool add_at_front)
+{
+	size_type old_num_nodes = finish.node - start.node + 1;
+	size_type new_num_nodes = old_num_nodes + nodes_to_add;
+
+	map_pointer new_start;
+	if(map_size > 2 * new_num_nodes)  //one edian used heaviley
+	{
+		new_start = map + (map_size - old_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
+
+		if(new_start < start.node)
+			copy(start.node, finish.node + 1, new_start);
+		else
+			copy_backward(start.node, finish.node + 1, new_start + old_num_nodes);
+	}
+	else
+	{
+		size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
+		map_pointer new_map    = map_allocator::allocate(new_map_size);
+
+		new_start = new_map + ( new_map_size - old_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0));
+		
+		copy(start.node, finish.node + 1, new_start);
+		map_allocator::deallocate(map, map_size);
+
+		map = new_map;
+		map_size = new_map_size;
+	}
+
+	start.set_node(new_start);
+	finish.set_node(new_start + old_num_nodes - 1);
+}
