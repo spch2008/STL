@@ -33,7 +33,15 @@ int main(int argc, char* argv[])
 	std::cout << std::endl;
    
 
+	deque<int> de(2,5);
+	std::cout << de.front() << std::endl;
 
+	de.push_back(6);
+
+	std::cout << de.back() << std::endl;
+
+	de.pop_back();
+	std::cout << de.back() << std::endl;
 	system("pause");
 	return 0;
 }

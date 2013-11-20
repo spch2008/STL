@@ -1,12 +1,13 @@
 #include "memory.h"
 #include "stl_iterator.h"
+#include <algorithm>
 
 inline size_t _deque_buf_size(size_t n, size_t sz)
 	{ return n != 0 ? n : ( sz < 512 ? size_t(512 / sz) : size_t(1) ); }
 
 
 template <class T, class PTR, class REF, size_t BufSize>
-class _deque_iterator
+struct _deque_iterator
 {
 	typedef _deque_iterator<T, T*, T&, BufSize> iterator;
 	
@@ -162,7 +163,7 @@ public:
 	iterator end() { return finish; }
 
 	//Capacity:
-	size_type size() { return size_type(-1); }
+	size_type size() { return finish - start; }
 	bool empty() { finish == start};  //important  ??? init start cur 
 
 	//Element access:
@@ -175,6 +176,11 @@ public:
 	void push_front(const value_type &val);
 	void pop_back();
 	void pop_front();
+
+	iterator insert (iterator position, const value_type& val);
+	iterator erase (iterator position);
+	iterator erase (iterator first, iterator last);
+	void clear();
 
 
 protected:
@@ -209,6 +215,8 @@ protected:
 	void reserve_map(size_type nodes_to_add, bool add_at_front);
 	void reserve_map_at_back(size_type nodes_to_add = 1);
 	void reserve_map_at_front(size_type nodes_to_add = 1);
+
+	iterator insert_aux(iterator position, const value_type& val);
 };
 
 
@@ -230,12 +238,12 @@ void deque<T, Alloc, BufSize>::create_map_and_nodes(size_type num_elems)
 	size_type num_nodes = num_elems / buffer_size() + 1;  // num of user-wanted map_nodes
 
 	//build map
-	map_size = max( initial_map_size(), num_nodes + 2 ); 
+	map_size = std::max( initial_map_size(), num_nodes + 2 ); 
 	map      = map_allocator::allocate(map_size);
 
 	//set initial map pointer
 	map_pointer nstart  = map + (map_size - num_nodes) / 2;
-	map_pointer nfinish = start + num_nodes - 1;             //finish pointer to actual node
+	map_pointer nfinish = nstart + num_nodes - 1;             //finish pointer to actual node
 
 	map_pointer curr;
 	try
@@ -293,7 +301,7 @@ void deque<T, Alloc, BufSize>::push_back_aux(const value_type &val)
 	}
 	catch(...)
 	{
-		deallocate_node(finish.node + 1);
+		deallocate_node(*(finish.node + 1));
 		throw;
 	}
 	
@@ -419,18 +427,18 @@ void deque<T, Alloc, BufSize>::reserve_map(size_type nodes_to_add, bool add_at_f
 		new_start = map + (map_size - old_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
 
 		if(new_start < start.node)
-			copy(start.node, finish.node + 1, new_start);
+			std::copy(start.node, finish.node + 1, new_start);
 		else
-			copy_backward(start.node, finish.node + 1, new_start + old_num_nodes);
+			std::copy_backward(start.node, finish.node + 1, new_start + old_num_nodes);
 	}
 	else
 	{
-		size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
+		size_type new_map_size = map_size + std::max(map_size, nodes_to_add) + 2;
 		map_pointer new_map    = map_allocator::allocate(new_map_size);
 
-		new_start = new_map + ( new_map_size - new_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0));
+		new_start = new_map + ( new_map_size - new_num_nodes) / 2 + (add_at_front ? nodes_to_add : 0);
 		
-		copy(start.node, finish.node + 1, new_start);
+		std::copy(start.node, finish.node + 1, new_start);
 		map_allocator::deallocate(map, map_size);
 
 		map = new_map;
@@ -440,3 +448,106 @@ void deque<T, Alloc, BufSize>::reserve_map(size_type nodes_to_add, bool add_at_f
 	start.set_node(new_start);
 	finish.set_node(new_start + old_num_nodes - 1);
 }
+
+//? all iterator need typename ?
+template <class T, class Alloc, size_t BufSize>
+typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::insert(iterator position, const value_type& value)
+{
+	if(position.cur == start.cur)
+	{
+		push_front(value);
+		return start;
+	}
+	else if(position.cur == finish.cur)
+	{
+		push_back(value);
+		iterator tmp = finish;
+		return --tmp;
+	}
+	else
+		insert_aux(position, value);
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::insert_aux(iterator position, const value_type& value)
+{
+	different_type index = position - start; 
+	if( index < size() / 2)
+	{
+		push_front( front() );
+		iterator front1 = start;
+		++front1;
+		iterator front2 = front1;
+		++front2;
+		
+		copy(front2, position+1, front1);
+	}
+	else
+	{
+		push_back( back() );
+		iterator back1 = finsih;
+		 --back1;
+		iterator back2 = back1;
+		 --back2;
+
+		copy_backward(pos, back2, back1);
+	}
+	*position = value;
+	return position;
+}
+
+template <class T, class Alloc, size_t BufSize>
+typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::erase(iterator position)
+{
+	different_type index = position - start;
+
+	iterator next = position;
+	++next;
+	if(index < size() / 2)
+	{
+		copy_backward(start, position, next);
+		pop_front();
+	}
+	else
+	{
+		copy(next, finish, pos);
+		pop_back();
+	}
+
+	return start + index;  
+}
+// cannot return position, due to position can be invalid
+
+template <class T, class Alloc, size_t BufSize>
+typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::erase(iterator first, iterator last)
+{
+}
+
+
+template <class T, class Alloc, size_t BufSize>
+void deque<T, Alloc, BufSize>::clear()
+{
+	map_pointer curr;
+	for(curr = start.node + 1; curr < finish.node; ++curr)
+	{
+		destroy(*curr, *curr + buffer_size());
+		data_allocator::deallocate(*curr, buffer_size());
+	}
+
+	if(start.node != finish.node)
+	{
+		destroy(start.cur, start.last);
+		destroy(finish.first, finish.cur);
+		data_allocator::deallocate(finish.first, buffer_size());
+	}
+	else
+		destroy(start.cur, start.last);
+
+    //cannot deallocate start.first£¬ because at least reverse one buffer
+	
+	finish = start;
+}
+
+
+
