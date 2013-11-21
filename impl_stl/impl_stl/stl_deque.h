@@ -522,6 +522,37 @@ typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::erase(iter
 template <class T, class Alloc, size_t BufSize>
 typename deque<T, Alloc, BufSize>::iterator deque<T, Alloc, BufSize>::erase(iterator first, iterator last)
 {
+	if(first == start && last == finish)
+	{
+		clear();
+		return finsih;
+	}
+	
+	difference_type n           = last - first;
+	difference_type elem_before = first - start;
+	if( elem_before < (size() - n) / 2)
+	{
+		std::copy_backward(start, first, last);
+		iterator new_start = start + n;
+
+		destroy(start, new_start);
+		for(map_pointer curr = start.node; curr < new_start.node; ++curr)
+			data_allocator::deallocate(*curr, buffer_size());
+		
+		start = new_start;
+	}
+	else
+	{
+		std::copy(last, finish, first);
+		iterator new_finish = finish - n;
+
+		destroy(new_finish, finish);
+		for(map_pointer curr = new_finish.node+1; curr <= finish.node; ++curr)  //important +1 <=
+			data_allocator::deallocate(*curr, buffer_size() );
+
+		finish = new_finish;
+	}
+	return start + elem_before; //important return val
 }
 
 
