@@ -121,6 +121,8 @@ struct _deque_iterator
 	}
 
 
+	reference operator[](difference_type n) { return *(*this + n); }
+
 	bool operator==(const iterator& that)
 	{ return cur == that.cur; }
 	bool operator!=(const iterator& that)
@@ -167,7 +169,7 @@ public:
 	bool empty() { finish == start};  //important  ??? init start cur 
 
 	//Element access:
-	reference operator[](size_type n);
+	reference operator[](size_type n) { return start[difference_type(n)]; }
 	reference front() { return *start; }
 	reference back()  {iterator tmp = finish; --tmp; return *tmp;};
 
