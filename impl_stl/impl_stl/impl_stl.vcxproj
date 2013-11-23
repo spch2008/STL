@@ -87,6 +87,7 @@
     <ClInclude Include="stl_deque.h" />
     <ClInclude Include="stl_iterator.h" />
     <ClInclude Include="stl_list.h" />
+    <ClInclude Include="stl_stack.h" />
     <ClInclude Include="stl_uninitialized.h" />
     <ClInclude Include="stl_vector.h" />
     <ClInclude Include="type_traits.h" />

@@ -6,7 +6,7 @@
 #include "list.h"
 #include <iostream>
 
-#include "stl_deque.h"
+#include "stl_stack.h"
 int main(int argc, char* argv[])
 {
 	
@@ -42,6 +42,23 @@ int main(int argc, char* argv[])
 
 	de.pop_back();
 	std::cout << de.back() << std::endl;
+
+	std::cout << "stl_stack" << std::endl;
+
+	stack<int> s;
+	s.push(1);
+	s.push(2);
+	s.push(3);
+
+	std::cout << s.top() << std::endl;
+	s.pop();
+
+	std::cout << s.top() << std::endl;
+	s.pop();
+
+	std::cout << s.top() << std::endl;
+	s.pop();
+
 	system("pause");
 	return 0;
 }
