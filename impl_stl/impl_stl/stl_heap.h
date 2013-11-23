@@ -19,7 +19,7 @@ void _push_heap(RandomAccessIterator first, RandomAccessIterator last,
 
 
 template <class RandomAccessIterator, class Distance, class T>
-void _push_heap_aux(RandomAccessIterator first, Distance holeIndex, Distance topIndex, T& value)
+void _push_heap_aux(RandomAccessIterator first, Distance holeIndex, Distance topIndex, T value)
 {
 	Distance parentIndex = (holeIndex - 1) / 2;
 	while( holeIndex > topIndex && *(first + parentIndex) < value )
@@ -50,12 +50,13 @@ void _pop_heap(RandomAccessIterator first, RandomAccessIterator last,
 
 
 template <class RandomAccessIterator, class Distance, class T>
-void _pop_heap_aux(RandomAccessIterator first, Distance holeIndex, Distance n, T& value)
+void _pop_heap_aux(RandomAccessIterator first, Distance holeIndex, Distance n, T value)
 {
 	Distance topIndex = holeIndex;
 	Distance secondSonIndex = 2 * holeIndex + 2;
+	Distance lastIndex       = n;   //num - 1 = index
 
-	while( secondSonIndex < n)
+	while( secondSonIndex < lastIndex)
 	{
 		if( *(first + secondSonIndex - 1) > *(first + secondSonIndex) )
 			secondSonIndex--;
@@ -66,14 +67,13 @@ void _pop_heap_aux(RandomAccessIterator first, Distance holeIndex, Distance n, T
 		secondSonIndex = 2 * holeIndex + 2;
 	}
 
-	if(secondSonIndex - 1 == n)
+	if(secondSonIndex == lastIndex)  //have left son, left = secondSon - 1
 	{
-		secondSonIndex--;
-		*(first + holeIndex) = *(first + secondSonIndex);
+		*(first + holeIndex) = *(first + secondSonIndex - 1);
 		holeIndex = secondSonIndex - 1;
 	}
 
-//	_push_heap_aux(first, holeIndex, topIndex, value);
+	_push_heap_aux(first, holeIndex, topIndex, value);
 }
 
 
@@ -82,6 +82,29 @@ void sort_heap(RandomAccessIterator first, RandomAccessIterator last)
 {
 	while( first < last)
 		pop_heap(first, last--);
+}
+
+template <class RandomAccessIterator>
+void make_heap(RandomAccessIterator first, RandomAccessIterator last)
+{
+	_make_heap(first, last, distance_type(first), value_type(first) );
+}
+
+
+template <class RandomAccessIterator, class Distance, class T>
+void _make_heap(RandomAccessIterator first, RandomAccessIterator last,
+	            Distance*, T*)
+{
+	Distance n = last - first;
+	if( n < 2 ) return;
+
+	Distance parentIndex = (n - 2) / 2;
+	while(true)
+	{
+		_pop_heap_aux(first, parentIndex, n, *(first + parentIndex) );
+		if(parentIndex == 0) return;
+		parentIndex--;
+	}
 }
 
 #endif
