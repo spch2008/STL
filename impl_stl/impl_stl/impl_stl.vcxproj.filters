@@ -59,5 +59,8 @@
     <ClInclude Include="stl_stack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@
 #include "list.h"
 #include <iostream>
 
-#include "stl_stack.h"
+#include "stl_queue.h"
 int main(int argc, char* argv[])
 {
 	
@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
 	de.pop_back();
 	std::cout << de.back() << std::endl;
 
+	/*
 	std::cout << "stl_stack" << std::endl;
 
 	stack<int> s;
@@ -58,6 +59,22 @@ int main(int argc, char* argv[])
 
 	std::cout << s.top() << std::endl;
 	s.pop();
+	*/
+
+	std::cout << "stl_queue" << std::endl;
+	queue<int> q;
+	q.push(1);
+	q.push(2);
+	q.push(3);
+
+	std::cout << q.front() << std::endl;
+	q.pop();
+
+	std::cout << q.front() << std::endl;
+	q.pop();
+
+	std::cout << q.front() << std::endl;
+	q.pop();
 
 	system("pause");
 	return 0;
