@@ -9,6 +9,7 @@
 #include "stl_heap.h"
 int main(int argc, char* argv[])
 {
+	/*
 	
 	list<int> vec;
 	vec.push_back(10);
@@ -31,7 +32,7 @@ int main(int argc, char* argv[])
 	for(iter = vec.begin(); iter != vec.end(); iter++)
 		std::cout << *iter << " ";
 	std::cout << std::endl;
-   
+   */
 	/*
 	deque<int> de(2,5);
 	std::cout << de.front() << std::endl;
@@ -87,10 +88,12 @@ int main(int argc, char* argv[])
 	h.push_back(4);
 	h.push_back(6);
 	
-	vector<int>::iterator iter;
+	vector<int>::iterator iter = h.begin();
 
 	pop_heap(h.begin(), h.end());
-	
+	for(iter = h.begin(); iter != h.end(); ++iter)
+		std::cout << *iter << " ";
+	std::cout << std::endl;
 
 	system("pause");
 	return 0;
