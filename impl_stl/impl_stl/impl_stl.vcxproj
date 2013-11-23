@@ -85,6 +85,7 @@
     <ClInclude Include="stl_alloc.h" />
     <ClInclude Include="stl_construct.h" />
     <ClInclude Include="stl_deque.h" />
+    <ClInclude Include="stl_heap.h" />
     <ClInclude Include="stl_iterator.h" />
     <ClInclude Include="stl_list.h" />
     <ClInclude Include="stl_queue.h" />
