@@ -21,6 +21,12 @@ public:
 	vector(size_type n, const T& value) { fill_initialize(n, value); }
 	explicit vector(size_type n) { fill_initialize(n, T() ); }
 
+	template <class InputIterator>
+	vector(InputIterator first, InputIterator last) : start(0), finish(0), end_of_storage(0)
+	{
+		range_initialize(first, last);
+	}
+
 	vector(const vector& x);
 	vector& operator=(const vector& x);
 
@@ -57,6 +63,13 @@ protected:
 	void fill_initialize(size_type n, const T& val);
 	iterator allocate_and_fill(size_type n, const T& val);
 	iterator allocate_and_copy(size_type n, iterator first, iterator last);
+	
+	template <class InputIterator>
+	void range_initialize(InputIterator first, InputIterator last)
+	{
+		for(; first != last; ++first)
+			push_back(*first);
+	}
 
 private:
 	iterator start;

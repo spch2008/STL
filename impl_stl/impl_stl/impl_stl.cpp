@@ -6,7 +6,7 @@
 #include "list.h"
 #include <iostream>
 
-#include "stl_heap.h"
+#include "stl_queue.h"
 int main(int argc, char* argv[])
 {
 	/*
@@ -79,6 +79,7 @@ int main(int argc, char* argv[])
 	q.pop();
 	*/
 
+	/*
 	vector<int> h;
 	h.push_back(0);
 	h.push_back(1);
@@ -98,8 +99,19 @@ int main(int argc, char* argv[])
 		std::cout << *iter << " ";
 	std::cout << std::endl;
 
+	*/
 	
 	
+	
+	int ia[9] = {0,1,2,3,4,8,9,3,5};
+	priority_queue<int> q(ia, ia + 9);
+
+	while(q.empty() == false)
+	{
+		std::cout << q.top() << " ";
+		q.pop();
+	}
+	std::cout << std::endl;
 	
 	system("pause");
 	return 0;
