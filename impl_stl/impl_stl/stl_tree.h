@@ -189,7 +189,7 @@ protected:
 	static link_type& parent(link_type x){ return (link_type&)x->parent; }
 	static reference  value(link_type x) { return x->value; }
 	static color_type& color(link_type x){ return (color_type&)x->color; }
-	static const Key& key(link_type x)   { return (Key&)x->color; }
+	static const Key& key(link_type x)   { return KeyOfValue()(value(x)); }
 
 };
 
