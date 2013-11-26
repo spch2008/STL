@@ -3,6 +3,7 @@
 
 #include "stl_iterator.h"
 #include <stddef.h>
+#include "memory.h"
 
 #define NULL 0
 
@@ -131,5 +132,66 @@ struct _rb_tree_iterator : public _rb_tree_base_iterator
 	iterator operator--() { decrement(); return *this; }
 	iterator operator--(int) { iterator i = *this; --*this; return *this;}
 };
+
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc = alloc>
+class rb_tree
+{
+protected:
+	typedef _rb_tree_node_base*  base_ptr;
+	typedef _rb_tree_node<Value> rb_tree_node;
+	typedef simple_alloc<rb_tree_node, Alloc> rb_tree_node_allocator;
+	typedef _rb_tree_node_color_type          color_type;
+
+
+public:
+	typedef Key key_type;
+	typedef Value value_type;
+	typedef value_type* pointer;
+	typedef const value_type* const_pointer;
+	typedef value_type& reference;
+	typedef const value_type& const_reference;
+	typedef rb_tree_node* link_type;
+	typedef size_t  size_type;
+	typedef ptrdiff_t difference_type;
+
+	typedef _rb_tree_iterator<Value, Value&, Value*> iterator;
+
+protected:
+	link_type get_node() { return rb_tree_node_allocator::allocate(); }
+	void      put_node(link_type p) { rb_tree_node_allocator::deallocate(p); }
+
+	link_type create_node(const value_type& val)
+	{
+		link_type p = get_node();
+		construct(&p->value, val);
+	}
+
+	void destroy_node(link_type p)
+	{
+		destroy(&p->value);
+		put_node(p);
+	}
+
+
+protected:
+	size_type node_count;
+	link_type header;
+	Compare   key_compare;
+
+	link_type& /*指针的引用*/ root() { return (link_type&)/* 取地址，转换成link_type*/header->parent; }
+	link_type& leftmost()  { return (link_type&) header->left;  }
+	link_type& rightmost() { return (link_type&) header->right; } 
+
+	static link_type& left(link_type x)  { return (link_type&)x->left; }
+	static link_type& right(link_type x) { return (link_type&)x->right; }
+	static link_type& parent(link_type x){ return (link_type&)x->parent; }
+	static reference  value(link_type x) { return x->value; }
+	static color_type& color(link_type x){ return (color_type&)x->color; }
+	static const Key& key(link_type x)   { return (Key&)x->color; }
+
+};
+
 
 #endif
