@@ -191,7 +191,148 @@ protected:
 	static color_type& color(link_type x){ return (color_type&)x->color; }
 	static const Key& key(link_type x)   { return KeyOfValue()(value(x)); }
 
+public:
+	rb_tree(const Compare& cmp = Compare() ) : node_count(0), key_compare(cmp) { init(); }
+
+public:
+	iterator begin() { return leftmost(); }
+	iterator end()   { return header;}
+	bool  empty() { return node_count == 0; }
+	size_type size() { return node_count; }
+	size_type max_size() { return size_type(-1); }
+
+	pair<iterator, bool> insert_unique(const value_type& val);
+	iterator insert_equal(const value_type& val);
+
+private:
+	void init();
+	_rb_tree_rotate_left(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+	_rb_tree_rotate_right(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+	_rb_tree_balance(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+
+
 };
 
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::init()
+{
+	header = get_node();
+	coloer(header) = _rb_tree_red;
+
+	root() = 0;
+	leftmost()  = header;
+	rightmost() = header; 
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_left(rb_tree_node_base* x
+	                                                                       rb_tree_node_base*& root)
+{
+	rb_tree_node_base* y = x->right;
+
+	x->right = y->left;
+	if(y->left != NULL)
+		y->left->parent = x;
+
+	y->parent = x->parent;
+	if(x == root)
+		root = y;
+	else if( x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+
+	y->left = x;
+	x->parent = y;
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_right(rb_tree_node_base* x
+	                                                                       rb_tree_node_base*& root)
+{
+	rb_tree_node_base* y = x->left;
+
+	x->left = y->right;
+	if(y->right != NULL)
+		y->right->parent = x;
+
+	y->parent = x->parent;
+	if(x == root)
+		root = y;
+	else if( x == x->parent->left)
+		x->parent->left = y;
+	else
+		x->parent->right = y;
+
+	y->right = x;
+	x->parent = y;
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_balance(_rb_tree_node_base* x, 
+	                                                                   _rb_tree_node_base*& root)
+{
+	x->color = _rb_tree_red;
+	while( x != root && x->parent->color == _rb_tree_red)
+	{
+		if( x->parent == x->parent->parent->left)
+		{
+			_rb_tree_node_base* y = x->parent->right;
+			if(y && y->color == _rb_tree_red)
+			{
+				x->parent->color = _rb_tree_black;
+				y->color         = _rb_tree_black;
+
+				x->parent->parent->color = _rb_tree_red;
+				x = x->parent->parent;
+			}
+			else
+			{
+				if(x == x->parent->right)
+				{
+					x = x->parent;
+					_rb_tree_rotate_left(x, root);
+
+				}
+
+				x->parent->color = _rb_tree_black;
+				x->parent->parent->color = _rb_tree_red;
+				_rb_tree_rotate_right(x->parent->parent, root);
+
+			}
+		}
+		else
+		{
+			_rb_tree_node_base* y = x->parent->parent->left;
+			if(y && y->color == _rb_tree_red )
+			{
+				x->parent->color = _rb_tree_black;
+			    y->color         = _rb_tree_black;
+				x->parent->parent->color = _rb_tree_red;
+
+				x = x->parent->prent;
+
+			}
+			else
+			{
+				if(x == x->parent->left)
+				{
+					x = x->parent;
+					_rb_tree_rotate_right(x, root);
+				}
+				
+				x->parent->color = _rb_tree_black;
+				x->parent->parent->color = _rb_tree_red;
+
+				_rb_tree_rotate_left(x->parent->parent, root);
+			}
+		}
+	}
+}
 
 #endif
