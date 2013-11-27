@@ -194,6 +194,9 @@ protected:
 public:
 	rb_tree(const Compare& cmp = Compare() ) : node_count(0), key_compare(cmp) { init(); }
 
+	iterator insert_equal(const Value& v);
+	iterator insert_unique(const Value& v);
+
 public:
 	iterator begin() { return leftmost(); }
 	iterator end()   { return header;}
@@ -210,7 +213,7 @@ private:
 	void _rb_tree_rotate_right(_rb_tree_node_base* x, _rb_tree_node_base*& root);
 	void _rb_tree_balance(_rb_tree_node_base* x, _rb_tree_node_base*& root);
 
-	void _insert(base_ptr x_, base_ptr y_, const Value& v);
+	iterator _insert(base_ptr x_, base_ptr y_, const Value& v);
 
 };
 
@@ -339,7 +342,8 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_balance(_rb_tree_
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_insert(base_ptr x_, base_ptr y_, const Value& v)
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_insert(base_ptr x_, base_ptr y_, const Value& v)
 {
 	link_type x = (link_type)x_;  //insert point
 	link_type y = (link_type)y_;  //father of insert point
@@ -377,6 +381,54 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_insert(base_ptr x_, base_
 	++node_count;
 	return iterator(z);
 }
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const Value& v)
+{
+	link_type y = header;
+	link_type x = root();
+
+	while(x != NULL)
+	{
+		y = x;
+		x = key_compare(KeyOfValue()(v), key(x)) ? left(x) : right(x);
+	}
+	_insert(x, y, v);
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const Value& v)
+{
+	link_type y = header;
+	link_type x = root();
+	bool cmp = true;
+
+	while(x != NULL)
+	{
+		y = x;
+		cmp = key_compare(KeyOfValue()(v), key(x));
+		x = cmp ? left(x) : right(x);
+	}
+	
+	iterator j = iterator(y);
+	if(cmp) //v Ð¡ÓÚ¼üÖµ
+	{
+		if( j == begin() )
+			return pair<iterator, bool>(_insert(x, y, v), true);
+		else
+			--j;
+	}
+
+	if(key_compare(key(j.node), KeyOfValue()(v)))
+		return pair<iterator, bool)(_insert(x, y, v), true);
+
+	return pair<iterator, bool>(j, false);
+}
+
 
 
 #endif
