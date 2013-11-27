@@ -206,10 +206,11 @@ public:
 
 private:
 	void init();
-	_rb_tree_rotate_left(_rb_tree_node_base* x, _rb_tree_node_base*& root);
-	_rb_tree_rotate_right(_rb_tree_node_base* x, _rb_tree_node_base*& root);
-	_rb_tree_balance(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+	void _rb_tree_rotate_left(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+	void _rb_tree_rotate_right(_rb_tree_node_base* x, _rb_tree_node_base*& root);
+	void _rb_tree_balance(_rb_tree_node_base* x, _rb_tree_node_base*& root);
 
+	void _insert(base_ptr x_, base_ptr y_, const Value& v);
 
 };
 
@@ -334,5 +335,48 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_balance(_rb_tree_
 		}
 	}
 }
+
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_insert(base_ptr x_, base_ptr y_, const Value& v)
+{
+	link_type x = (link_type)x_;  //insert point
+	link_type y = (link_type)y_;  //father of insert point
+
+	link_type z;                  //new node
+
+	if(y == header || key_compare(KeyOfValue()(v), key(y)) )
+	{
+		z = create_node(v);
+		left(y) = z;
+
+		if( y == header)
+		{
+			root() = z;
+			leftmost() = z;
+		}
+		else if( y == leftmost())
+			leftmost() = z;
+
+ 	}
+	else
+	{
+		z = create_node(v);
+		right(y) = z;
+
+		if( y == rightmost())
+			rightmost() = z;
+	}
+
+	parent(z) = y;
+	left(z) = 0;
+	right(z) = 0;
+
+	_rb_tree_balance(z, header->parent);
+	++node_count;
+	return iterator(z);
+}
+
 
 #endif
