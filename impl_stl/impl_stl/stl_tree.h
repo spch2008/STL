@@ -214,6 +214,10 @@ private:
 	void _rb_tree_balance(_rb_tree_node_base* x, _rb_tree_node_base*& root);
 
 	iterator _insert(base_ptr x_, base_ptr y_, const Value& v);
+	_rb_tree_node_base* __rb_tree_rebalance_for_erase(_rb_tree_node_base* z,
+                                                       _rb_tree_node_base*& root,
+                                                       _rb_tree_node_base*& leftmost,
+                                                       _rb_tree_node_base*& rightmost);
 
 };
 
@@ -430,5 +434,166 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 }
 
 
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_node_base*
+ _rb_tree_rebalance_for_erase(_rb_tree_node_base* z, _rb_tree_node_base*& root,
+                               _rb_tree_node_base*& leftmost, _rb_tree_node_base*& rightmost)
+{
+	_rb_tree_node_base *y = z;
+	_rb_tree_node_base *x = NULL;
+	_rb_tree_node_base *x_parent = NULL;   // rember x_parent because x may be zero, we cann't get it's parent
+
+	//find y and x
+	if(y ->left == NULL)
+		x = y->right;
+	else if(x->right == NULL)
+		x = y->left;
+	else
+	{
+		y = y->right;
+		while(y->left != NULL)
+			y = y->left;
+		x = y->right;
+	}
+
+
+	//delete and link nodes
+	if(y != z)  //z has two sons
+	{
+		y->left = z->left;
+		z->left->parent = y;
+
+		if(z->right != y) 
+		{
+			y->parent->left = x;
+			if(x) x->parent = y->parent;
+
+			y->right = z->right;
+			z->right->parent = y;
+
+		}
+		else
+			x_parent = y;
+		
+		if(root == z)
+			root = y;
+		else if (z->parent->left == z)
+			z->parent->left = y;
+		else
+			z->parent->right = z;
+		y->parent = z->parent;
+
+		std::swap(y->color, z->color);
+		y = z;
+	}
+	else
+	{
+		x_parent = y->parent;
+		if(x) x->parent = y->parent;
+
+		if(z == root)
+			root = x;
+		else if (z->parent->left == z)
+			z->parent->left = x;
+		else
+			z->parent->right = x;
+
+		if (leftmost == z)
+		{
+			if(z->right == NULL)
+				leftmost = z->parent;
+			else
+				leftmost = _rb_tree_node_base::minimum(x);
+		}
+		else if(rightmost == z)
+		{
+			if(z->left == NULL)
+				rightmost = z->parent;
+			else
+				rightmost = _rb_tree_node_base::maxmun(x);
+		}
+	}
+
+
+	//balance tree color
+	if (y->color != _rb_tree_red)
+	{
+		while ( x != root && ( x == NULL || x->color == _rb_tree_black) )
+		{
+			if(x == x_parent->left)
+			{
+				_rb_tree_node_base* w = x_parent->right;
+				if(w->color == _rb_tree_red)
+				{
+					std::swap(x_parent->color, w->color);
+					_rb_tree_rotate_left(x_parent, root);
+					w = x_parent->right;
+				}
+				
+				if( (w->left == NULL || w->left->color == _rb_tree_black) &&
+					(w->right == NULL || w->right->color == _rb_tree_black) )
+				{
+					w->color = _rb_tree_black;
+					x = x_parent;
+					x_parent = x_parent->parent;
+				}
+				else 
+				{
+					if( w->right == NULL || w->right->color == _rb_tree_black) 
+					{
+						if(w->left != NULL) w->left = _rb_tree_black;
+
+						w->color = _rb_tree_red;
+						_rb_tree_rotate_right(w, root);
+						w = x_parent->right;
+					}
+
+					std::swap(x_parent, w);
+					if(w->right != NULL) w->right->color = _rb_tree_black;
+					_rb_tree_rotate_left(w_parent, root);
+					break;
+				}
+			}
+			else
+			{
+				_rb_tree_node_base* w = x_parent->left;
+				if(w->color == _rb_tree_red)
+				{
+					std::swap(x_parent->color, w->color);
+					_rb_tree_rotate_right(x_parent, root);
+					w = x_parent->left;
+				}
+				
+				if( (w->right == NULL || w->right->color == _rb_tree_black) &&
+					(w->left == NULL || w->left->color == _rb_tree_black) )
+				{
+					w->color = _rb_tree_black;
+					x = x_parent;
+					x_parent = x_parent->parent;
+				}
+				else 
+				{
+					if( w->left == NULL || w->left->color == _rb_tree_black) 
+					{
+						if(w->right != NULL) w->right = _rb_tree_black;
+
+						w->color = _rb_tree_red;
+						_rb_tree_rotate_left(w, root);
+						w = x_parent->left;
+					}
+
+					std::swap(x_parent, w);
+					if(w->left != NULL) w->left->color = _rb_tree_black;
+					_rb_tree_rotate_right(w_parent, root);
+					break;
+				}
+			}
+		}
+	}
+
+	if(x) x->color = _rb_tree_black;
+
+}
 
 #endif
