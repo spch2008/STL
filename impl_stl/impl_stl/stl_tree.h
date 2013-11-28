@@ -193,6 +193,7 @@ protected:
 
 public:
 	rb_tree(const Compare& cmp = Compare() ) : node_count(0), key_compare(cmp) { init(); }
+	~rb_tree() { clear(); put_node(header); }
 
 	iterator insert_equal(const Value& v);
 	iterator insert_unique(const Value& v);
@@ -207,6 +208,9 @@ public:
 	pair<iterator, bool> insert_unique(const value_type& val);
 	iterator insert_equal(const value_type& val);
 
+	void erase(iterator position);
+	void erase(iterator fist, iterator last);
+
 private:
 	void init();
 	void _rb_tree_rotate_left(_rb_tree_node_base* x, _rb_tree_node_base*& root);
@@ -218,6 +222,9 @@ private:
                                                        _rb_tree_node_base*& root,
                                                        _rb_tree_node_base*& leftmost,
                                                        _rb_tree_node_base*& rightmost);
+	void _erase(link_type x);
+	void _clear();
+	
 
 };
 
@@ -593,7 +600,54 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_node_base*
 	}
 
 	if(x) x->color = _rb_tree_black;
+}
 
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(iterator position)
+{
+	_rb_tree_node_base *y = _rb_tree_rebalance_for_erase(position.node, header->parent,
+		                                                 header->left, header->right);
+
+	destroy(y);
+	node_count--;
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::erase(iterator first, iterator last)
+{
+	if(first == begin() && last == end())
+		clear();
+	else
+		while(first != last)
+			erase(first++)
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_erase(link_type x)
+{
+	// erase without reblance
+	while( x != NULL)
+	{
+		_erase(right(x));
+		y = left(x);
+		destroy_node(x);
+		x = y;
+	}
+}
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::clear()
+{
+	if (node_count != 0)
+	{
+		_erase(root());
+		node_count = 0;
+		leftmost() = header;
+		rightmost() = header;
+		root() = 0;
+	}
 }
 
 #endif
