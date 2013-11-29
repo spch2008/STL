@@ -4,6 +4,7 @@
 #include "stl_iterator.h"
 #include <stddef.h>
 #include "memory.h"
+#include "stl_pair.h"
 
 #define NULL 0
 
@@ -142,7 +143,7 @@ protected:
 	typedef _rb_tree_node_base*  base_ptr;
 	typedef _rb_tree_node<Value> rb_tree_node;
 	typedef simple_alloc<rb_tree_node, Alloc> rb_tree_node_allocator;
-	typedef _rb_tree_node_color_type          color_type;
+	typedef _rb_tree_color_type  color_type;
 
 
 public:
@@ -206,10 +207,11 @@ public:
 	size_type max_size() { return size_type(-1); }
 
 	pair<iterator, bool> insert_unique(const value_type& val);
-	iterator insert_equal(const value_type& val);
+	//iterator insert_equal(const value_type& val);
 
 	void erase(iterator position);
 	void erase(iterator fist, iterator last);
+	void clear();
 
 private:
 	void init();
@@ -223,7 +225,7 @@ private:
                                                        _rb_tree_node_base*& leftmost,
                                                        _rb_tree_node_base*& rightmost);
 	void _erase(link_type x);
-	void _clear();
+	//void _clear();
 	
 
 };
@@ -243,8 +245,8 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::init()
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_left(rb_tree_node_base* x
-	                                                                       rb_tree_node_base*& root)
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_left(_rb_tree_node_base* x,
+	                                                                       _rb_tree_node_base*& root)
 {
 	rb_tree_node_base* y = x->right;
 
@@ -266,8 +268,8 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_left(rb_tr
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_right(rb_tree_node_base* x
-	                                                                       rb_tree_node_base*& root)
+void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_rotate_right(_rb_tree_node_base* x,
+	                                                                        _rb_tree_node_base*& root)
 {
 	rb_tree_node_base* y = x->left;
 
@@ -353,7 +355,7 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_balance(_rb_tree_
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
 	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_insert(base_ptr x_, base_ptr y_, const Value& v)
 {
 	link_type x = (link_type)x_;  //insert point
@@ -395,7 +397,7 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
 	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const Value& v)
 {
 	link_type y = header;
@@ -411,7 +413,7 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator 
 	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const Value& v)
 {
 	link_type y = header;
@@ -435,7 +437,7 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 	}
 
 	if(key_compare(key(j.node), KeyOfValue()(v)))
-		return pair<iterator, bool)(_insert(x, y, v), true);
+		return pair<iterator, bool>(_insert(x, y, v), true);
 
 	return pair<iterator, bool>(j, false);
 }
@@ -443,7 +445,7 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 
 
 template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
-rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_node_base*
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::_rb_tree_node_base*
  _rb_tree_rebalance_for_erase(_rb_tree_node_base* z, _rb_tree_node_base*& root,
                                _rb_tree_node_base*& leftmost, _rb_tree_node_base*& rightmost)
 {

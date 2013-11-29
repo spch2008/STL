@@ -19,7 +19,7 @@ struct pair
 	{ return first == that.first && second == that.second; }
 
 	bool operator<(const pair<T1, T2>& that) const
-	{ return first < that.first || !( that.first < first) && second == that.second ); }
+	{ return first < that.first || !( that.first < first) && second == that.second; }
 
 	pair<T1, T2> make_pair(const T1 &a, const T2 &b)
 	{ return pair(a, b); }
