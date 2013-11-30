@@ -196,8 +196,8 @@ public:
 	rb_tree(const Compare& cmp = Compare() ) : node_count(0), key_compare(cmp) { init(); }
 	~rb_tree() { clear(); put_node(header); }
 
-	iterator insert_equal(const Value& v);
-	iterator insert_unique(const Value& v);
+	//iterator insert_equal(const Value& v);
+	//iterator insert_unique(const Value& v);
 
 public:
 	iterator begin() { return leftmost(); }
@@ -207,11 +207,16 @@ public:
 	size_type max_size() { return size_type(-1); }
 
 	pair<iterator, bool> insert_unique(const value_type& val);
-	//iterator insert_equal(const value_type& val);
+	iterator insert_equal(const value_type& val);
 
 	void erase(iterator position);
 	void erase(iterator fist, iterator last);
+	size_type erase(const key_type& val);
 	void clear();
+
+	pair<iterator, iterator> equal_range(const key_type& k);
+	iterator lower_bound(const key_type& k);
+	iterator upper_bound(const key_type& k);
 
 private:
 	void init();
@@ -225,7 +230,6 @@ private:
                                                        _rb_tree_node_base*& leftmost,
                                                        _rb_tree_node_base*& rightmost);
 	void _erase(link_type x);
-	//void _clear();
 	
 
 };
@@ -651,5 +655,48 @@ void rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::clear()
 		root() = 0;
 	}
 }
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
+	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::lower_bound(const key_type& k)
+{
+	_rb_tree_node_base* y = header;
+	_rb_tree_node_base* x = root();
+
+	while( x != NULL)
+		if ( key_compare( k, key(x) )
+			y = x, x = left(x);
+		else
+			x = right(x);
+
+	return iterator(y);
+}
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
+	rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::upper_bound(const key_type& k)
+{
+	_rb_tree_node_base* y = header;
+	_rb_tree_node_base* x = root();
+
+	while( x != NULL)
+		if( !key_compare(k, key(x) )
+			y = x, x = right(x);
+		else
+			x = left(x);
+	/*
+	while (x != 0) 
+     if (key_compare(k, key(x)))
+       y = x, x = left(x);
+     else
+       x = right(x);
+     */
+	return iterator(y);
+}
+
+
+   
 
 #endif
