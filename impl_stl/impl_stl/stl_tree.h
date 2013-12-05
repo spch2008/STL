@@ -665,7 +665,7 @@ typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 	_rb_tree_node_base* x = root();
 
 	while( x != NULL)
-		if ( key_compare( k, key(x) )
+		if ( !key_compare( key(x), k )
 			y = x, x = left(x);
 		else
 			x = right(x);
@@ -681,19 +681,13 @@ typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 	_rb_tree_node_base* y = header;
 	_rb_tree_node_base* x = root();
 
-	while( x != NULL)
-		if( !key_compare(k, key(x) )
-			y = x, x = right(x);
-		else
-			x = left(x);
-	/*
-	while (x != 0) 
+	
+	while (x != NULL) 
      if (key_compare(k, key(x)))
        y = x, x = left(x);
      else
        x = right(x);
-     */
-	//
+     
 	return iterator(y);
 }
 
